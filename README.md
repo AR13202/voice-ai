@@ -64,6 +64,28 @@ OPENROUTER_MODEL=qwen2.5:7b
 OPENROUTER_BASE_URL=http://localhost:11434/v1
 ```
 
+### ⚡ Configuring Alternate LLM Providers (e.g., Groq)
+
+By default, the application runs on Google Gemini (`gemini-2.0-flash-001`). However, you can configure alternative providers in your `.env` file. The Python agent automatically detects your environment keys and prioritizes providers in the following order:
+
+1. **Local Ollama / OpenAI-compatible endpoint** (active if `OPENROUTER_BASE_URL` contains `localhost`/`127.0.0.1` and `OPENROUTER_API_KEY` is set).
+2. **Groq Cloud** (active if `GROQ_API_KEY` is set).
+3. **OpenRouter Cloud** (active if `OPENROUTER_API_KEY` is set).
+4. **Google Gemini** (default fallback if `GEMINI_API_KEY` is set).
+
+#### Setup Groq Cloud for Ultra-Low Latency
+
+Groq is highly recommended for real-time voice applications because of its incredibly low latency and high token-per-second output.
+
+To use Groq:
+1. Create a free account and generate an API key at the [Groq Console](https://console.groq.com/).
+2. Add your Groq credentials to the `.env` file at the root of the project:
+   ```env
+   GROQ_API_KEY=gsk_your_groq_api_key_here
+   GROQ_MODEL=llama-3.3-70b-versatile
+   ```
+3. Restart your Python agent worker. It will log `Using Groq model: llama-3.3-70b-versatile` upon connection and route LLM queries through Groq.
+
 ---
 
 ## 🚀 Running the Project
