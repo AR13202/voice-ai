@@ -9,7 +9,7 @@ An end-to-end real-time voice agent built on WebRTC using **LiveKit**. The appli
 - **Dynamic System Prompting:** Modify the agent's behavior, tone, or role on the fly from the UI before starting a call.
 - **Ingestion & Custom RAG:** Upload PDFs, text documents, or markdown files. Chunks are embedded using Gemini (`text-embedding-004`) and stored in a lightweight local vector store.
 - **Tool-Based Retrieval:** The voice agent calls a custom tool (`search_kb`) to fetch relevant document excerpts dynamically during the call.
-- **Multi-Provider LLM Orchestration:** Run the reasoning engine on Google Gemini, Groq Cloud (`llama-3.3-70b-versatile`), OpenRouter, or 100% locally with Ollama (e.g., `qwen2.5:7b` or `llama3.1`).
+- **Dual-LLM Architecture:** Uses Google Gemini (`text-embedding-004`) for document embeddings (RAG) and Groq Cloud (`llama-3.3-70b-versatile`) for ultra-low latency voice reasoning.
 - **Speech-to-Text & Text-to-Speech:** Integrated Deepgram (STT and TTS) for low-latency voice interactions.
 - **Visual Citations & Transcripts:** Watch live transcription and see list of cited document excerpts used in the agent's verbal answer.
 - **Active Call Ingestion Panel:** View currently indexed documents and their database chunk counts dynamically inside the session sidebar.
@@ -39,9 +39,14 @@ BACKEND_URL=http://localhost:3000
 # Frontend Configuration
 VITE_BACKEND_URL=http://localhost:3000
 
-# Google Gemini API Key (Required for Document Embeddings & optional LLM fallback)
+# Google Gemini API Key (Required for Document Embeddings)
 # Get one for free: https://aistudio.google.com/
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# Groq API Key (Required for Voice Reasoning)
+# Get one for free: https://console.groq.com/
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
 
 # Deepgram API Key (STT & TTS)
 # Free signup with $200 credits: https://console.deepgram.com/
@@ -51,40 +56,15 @@ DEEPGRAM_API_KEY=your_deepgram_api_key_here
 LIVEKIT_URL=ws://localhost:7880
 LIVEKIT_API_KEY=devkey
 LIVEKIT_API_SECRET=secret
-
-# --- OPTIONAL MULTI-LLM PROVIDERS ---
-
-# Option A: Groq Cloud (Highly Recommended: ultra low-latency)
-GROQ_API_KEY=your_groq_api_key_here
-GROQ_MODEL=llama-3.3-70b-versatile
-
-# Option B: Local Ollama / OpenRouter (Offline/Local reasoning)
-OPENROUTER_API_KEY=ollama
-OPENROUTER_MODEL=qwen2.5:7b
-OPENROUTER_BASE_URL=http://localhost:11434/v1
 ```
 
-### ⚡ Configuring Alternate LLM Providers (e.g., Groq)
+### 🔑 Required API Keys
 
-By default, the application runs on Google Gemini (`gemini-2.0-flash-001`). However, you can configure alternative providers in your `.env` file. The Python agent automatically detects your environment keys and prioritizes providers in the following order:
+This application requires API keys from both Google Gemini and Groq Cloud:
+1. **Google Gemini API Key (`GEMINI_API_KEY`)**: Used in the backend to generate document embeddings (`text-embedding-004`) for the RAG pipeline.
+2. **Groq Cloud API Key (`GROQ_API_KEY`)**: Used in the Python agent worker to run the ultra-low latency voice reasoning LLM (`llama-3.3-70b-versatile`).
 
-1. **Local Ollama / OpenAI-compatible endpoint** (active if `OPENROUTER_BASE_URL` contains `localhost`/`127.0.0.1` and `OPENROUTER_API_KEY` is set).
-2. **Groq Cloud** (active if `GROQ_API_KEY` is set).
-3. **OpenRouter Cloud** (active if `OPENROUTER_API_KEY` is set).
-4. **Google Gemini** (default fallback if `GEMINI_API_KEY` is set).
-
-#### Setup Groq Cloud for Ultra-Low Latency
-
-Groq is highly recommended for real-time voice applications because of its incredibly low latency and high token-per-second output.
-
-To use Groq:
-1. Create a free account and generate an API key at the [Groq Console](https://console.groq.com/).
-2. Add your Groq credentials to the `.env` file at the root of the project:
-   ```env
-   GROQ_API_KEY=gsk_your_groq_api_key_here
-   GROQ_MODEL=llama-3.3-70b-versatile
-   ```
-3. Restart your Python agent worker. It will log `Using Groq model: llama-3.3-70b-versatile` upon connection and route LLM queries through Groq.
+Both keys must be defined in your `.env` file for the application to start and function correctly.
 
 ---
 
